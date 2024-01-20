@@ -5,11 +5,55 @@ import "./App.css";
 const TILE_COLORS = ['red', 'green', 'blue', 'yellow'];
 
 export default function App() {
-  // Write your code here.
+  const [board, setBoard] = useState(shuffle([...TILE_COLORS, ...TILE_COLORS]));
+  const [selected, setSelected] = useState([]);
+  const [matched, setMatched] = useState([]);
+
+
+  useEffect(() => {
+    if (selected.length < 2) return;
+
+    if (board[selected[0]] === board[selected[1]]) {
+      setMatched(prevMatched => {
+        return [...prevMatched, ...selected];
+      })
+      setSelected([]);
+    } else {
+      const timerId = setTimeout(() => setSelected([]), 1000);
+      return () => clearTimeout(timerId)
+    }
+
+  }, [selected]);
+
+  const updateSelected = (i) => {
+    if (selected.length === 2 || selected.includes(i) || matched.includes(i)) return;
+    setSelected(prevSelected => {
+      return [...prevSelected, i];
+    })
+  }
+
+  const didWin = matched.length === board.length;
 
   return (
     <>
-      <h1>Hello</h1>
+      <h1>{didWin ? "You won" : 'Memory'}</h1>
+      <div className="board">
+        {board.map((color, index) => {
+          const isUsed = selected.includes(index) || matched.includes(index);
+          return (
+            <div
+              className={isUsed ? `tile ${color}` : `tile`}
+              key={index}
+              onClick={() => updateSelected(index)}
+            />
+          );
+        })}
+      </div>
+      {didWin && <button onClick={() => {
+        setBoard(shuffle([...TILE_COLORS, ...TILE_COLORS]));
+        setSelected([]);
+        setMatched([]);
+      }}>Restart</button>}
     </>
   );
 }
